@@ -1,0 +1,120 @@
+lab environment:
+3 virtual machines used for mon, mgr and osd as well
+Ubuntu 20.04
+Ceph version - Pacific
+Installation Method - ceph ansible
+One mgmt network which is used for cluster network as well
+
+Reference Doc: https://docs.ceph.com/projects/ceph-ansible/en/stable-6.0/
+
+Pre-requisite:
+Setup ssh key for the deployment node
+All the nodes should be password accessible using root user
+python3 should be installed on deployment node
+Ansible version 2.10 for stable version 6.0
+
+Installation:
+
+1. Clone git repository
+
+# git clone https://github.com/ceph/ceph-ansible.git
+
+2. Move to ceph-ansible directory and checkout for stable-6.0 branch.
+
+# cd ceph-ansible/
+# git checkout stable-6.0
+# git status
+
+3. Use pip to install ansible and python
+
+# pip install -r requirements.txt
+
+4. Check if ansible has been installed
+
+# ansible --version
+
+5. Create an inventory file under ceph-ansible directory to used for installation
+
+# vim inventory.yml 
+[mons]
+pram-ceph01
+pram-ceph02
+pram-ceph03
+
+[mgrs]
+pram-ceph01
+pram-ceph02
+pram-ceph03
+
+[osds]
+pram-ceph01
+pram-ceph02
+pram-ceph03
+
+6. Rename site.yml.sample to site.yml
+
+# mv site.yml.sample site.yml
+
+7. Rename all.yml.sample to all.yml under group_vars and and uncomment the below lines:
+
+---
+dummy:
+ceph_release_num:
+  pacific: 16
+mon_group_name: mons
+ntp_service_enabled: true
+ntp_daemon_type: chronyd
+ceph_origin: repository
+ceph_repository: community
+monitor_interface: ens3
+public_network: 10.242.1.0/22
+cluster_network: "{{ public_network | regex_replace(' ', '') }}"
+dashboard_enabled: false
+
+8. Rename mgrs.yml.sample, mons.yml.sample and osds.yml.sample to mgrs.yml, mons.yml and osds.yml
+
+# mv mgrs.yml.sample mgrs.yml
+# mv mons.yml.sample mons.yml
+# mv osds.yml.sample osds.yml
+
+9. Edit mgrs.yml and uncomment the below lines:
+
+---
+dummy:
+copy_admin_key: true
+
+10. Edit mons.yml and uncomment the below lines:
+
+---
+dummy:
+
+11. Edit osds.yml and uncomment the below lines to setup the devices to be used for osds:
+
+---
+dummy:
+devices:
+  - /dev/vdb
+  - /dev/vdc
+  - /dev/vdd
+
+12. Run site.yml to install ceph and you will see the tasks result as below:
+
+# ansible-playbook -i inventory.yml site.yml
+
+
+PLAY RECAP ************************************************************************************************************************************************************************************************
+pram-ceph01                : ok=273  changed=40   unreachable=0    failed=0    skipped=632  rescued=0    ignored=0   
+pram-ceph02                : ok=227  changed=35   unreachable=0    failed=0    skipped=563  rescued=0    ignored=0   
+pram-ceph03                : ok=229  changed=36   unreachable=0    failed=0    skipped=561  rescued=0    ignored=0   
+
+
+INSTALLER STATUS ******************************************************************************************************************************************************************************************
+Install Ceph Monitor           : Complete (0:01:04)
+Install Ceph Manager           : Complete (0:00:41)
+Install Ceph OSD               : Complete (0:01:27)
+Install Ceph Crash             : Complete (0:00:17)
+
+13. Check ceph status and version:
+
+# ceph -s
+# ceph --version
