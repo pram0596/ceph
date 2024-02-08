@@ -9,7 +9,7 @@ Reference Doc: https://docs.ceph.com/projects/ceph-ansible/en/stable-6.0/
 
 Pre-requisite:
 Setup ssh key for the deployment node
-All the nodes should be password accessible using root user
+Setup passwordless ssh to all nodes from deployment node.
 python3 should be installed on deployment node
 Ansible version 2.10 for stable version 6.0
 
